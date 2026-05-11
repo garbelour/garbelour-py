@@ -20,9 +20,9 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/garbelour-io/garbelour-py"
-Repository = "https://github.com/garbelour-io/garbelour-py.git"
-Issues = "https://github.com/garbelour-io/garbelour-py/issues"
+Homepage = "https://github.com/garbelour/garbelour-py"
+Repository = "https://github.com/garbelour/garbelour-py.git"
+Issues = "https://github.com/garbelour/garbelour-py/issues"
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
