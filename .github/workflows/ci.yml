@@ -1,0 +1,135 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  release:
+    types: published
+
+
+permissions:
+  contents: read
+
+jobs:
+  #-----------------------------------------------------------------------------
+  build-linux:
+    strategy:
+      matrix:
+        target: [x86_64, x86, armv7, s390x, ppc64le]  # aarch64
+
+    name: Build & Test Python / Linux / ${{ matrix.target }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        env:
+          PYO3_USE_ABI3_FORWARD_COMPATIBILITY: '1'
+        with:
+          target: ${{ matrix.target }}
+          args: --release --out dist
+          sccache: 'true'
+          manylinux: auto
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-linux-${{ matrix.target }}
+          path: dist
+
+      - name: Test
+        if: ${{ startsWith(matrix.target, 'x86_64') }}
+        shell: bash
+        run: |
+          set -e
+          pip install garbelour --find-links dist --force-reinstall
+          pip install pytest
+          pytest
+
+  #-----------------------------------------------------------------------------
+  build-macos:
+    strategy:
+      matrix:
+        target: [x86_64, aarch64]
+
+    name: Build & Test Python / MacOS / ${{ matrix.target }}
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        env:
+          PYO3_USE_ABI3_FORWARD_COMPATIBILITY: '1'
+        with:
+          target: ${{ matrix.target }}
+          args: --release --out dist
+          sccache: 'true'
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-macos-${{ matrix.target }}
+          path: dist
+
+  #-----------------------------------------------------------------------------
+  sdist:
+    runs-on: ubuntu-latest
+    name: Build Source
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build sdist
+        uses: PyO3/maturin-action@v1
+        with:
+          command: sdist
+          args: --out dist
+      - name: Upload sdist
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-sdist
+          path: dist
+
+  #-----------------------------------------------------------------------------
+  quality:
+    name: Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        run: rustup install --no-self-update stable && rustup default stable
+
+      - name: Check formatting
+        run: |
+          rustup component add rustfmt
+          cargo fmt -- --check
+
+  #-----------------------------------------------------------------------------
+  release:
+    name: Release
+    if: github.event_name == 'release'
+
+    needs: [build-linux, build-macos, sdist, quality]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+      - name: Publish to PyPI
+        uses: PyO3/maturin-action@v1
+        env:
+          MATURIN_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+        with:
+          command: upload
+          args: --non-interactive --skip-existing wheels-*/*

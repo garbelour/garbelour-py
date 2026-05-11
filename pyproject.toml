@@ -1,0 +1,31 @@
+[build-system]
+requires = ["maturin==1.13.1"]
+build-backend = "maturin"
+
+[project]
+name = "garbelour"
+dynamic = ["version"]
+
+description = "Classify PR diffs by reviewer attention: review, skim, or skip"
+keywords = ["code-review", "github", "diff", "triage"]
+
+authors = [{name = "Christopher Ariza"}]
+maintainers = [{name = "Christopher Ariza"}]
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Rust",
+    "Topic :: Software Development"
+]
+
+[project.urls]
+Homepage = "https://github.com/garbelour-io/garbelour-py"
+Repository = "https://github.com/garbelour-io/garbelour-py.git"
+Issues = "https://github.com/garbelour-io/garbelour-py/issues"
+
+[tool.maturin]
+features = ["pyo3/extension-module"]
+
+[project.scripts]
+garbelour = "garbelour:run_with_argv"
