@@ -45,7 +45,7 @@ jobs:
       - name: Checkout garbelour-rs
         uses: actions/checkout@v4
         with:
-          repository: 'garbelour-io/garbelour-rs'
+          repository: 'garbelour/garbelour-rs'
           path: 'garbelour-rs'
           fetch-depth: 0
           ref: ${{ env.VERSION_GARBELOUR_CRATES }}
