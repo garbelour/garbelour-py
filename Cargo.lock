@@ -332,7 +332,9 @@ dependencies = [
 
 [[package]]
 name = "garbelour"
-version = "0.1.1"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8cd5c285a9dac1f2e714b7b90f40139fca44cb5dcacde38a2276ebfdcbb6cfcc"
 dependencies = [
  "anyhow",
  "clap",
@@ -353,7 +355,7 @@ dependencies = [
 
 [[package]]
 name = "garbelour-py"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "garbelour",
  "pyo3",
