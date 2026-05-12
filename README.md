@@ -30,22 +30,30 @@ a TTY, json otherwise.
 | `import_reorder`       | Skip    | Same set of imports, different order                                     |
 | `public_api`           | Review  | `pub` items in Rust, `export` in TS/JS, module-level `def`/`class` in Python |
 | `control_flow`         | Review  | Added / removed / modified `if`, `match`/`switch`, `for`, `while`, `loop`, `return` |
+| `numerical_calc`       | Review  | Non-trivial arithmetic (≥ 2 operators) or calls into `Math.*` / `np.*` / `f64::*` / … |
 | `error_handling`       | Review  | Removed `?`, `try`/`except`, `try`/`catch`, `except` clauses             |
-| `size_threshold`       | Review  | Hunks > 150 changed lines (configurable)                                 |
 
 AST-based classifiers use tree-sitter for Rust, Python, TypeScript, and
 JavaScript. Files in unsupported languages still go through the path-based
-classifiers (generated, lockfile, size).
+classifiers (generated, lockfile).
+
+Large hunks aren't auto-elevated. Size alone is a weak signal; instead, big
+hunks that no other heuristic claims flow through `--llm` for a content-aware
+verdict, or fall back to **review** when the LLM is off.
 
 ## Install
 
-From source:
+To install the CLI via Python pip:
 
 ```sh
-cargo install --path .
+pip install garbelour
 ```
 
-The binary is `garbelour`.
+To instsall the CLI via Rust cargo:
+
+```sh
+cargo install garbelour
+```
 
 
 ## Usage
@@ -95,7 +103,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - run: cargo install garbelour
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - run: pip install garbelour
       - run: garbelour review --post-comment --llm
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -134,7 +145,6 @@ fields are optional.
 [classify]
 generated_globs = ["generated/**", "*.auto.ts"]   # merged with defaults
 lockfile_names = ["shrinkwrap.json"]              # merged with defaults
-size_threshold = 150
 
 [llm]
 provider = "anthropic"
@@ -222,6 +232,16 @@ let (classified, unclassified) = pipeline.run(&mut d);
 
 
 ## What is New in Garbelour
+
+### 0.3.0
+
+Improved classifier prompt.
+
+Added new classifier for numerical calculations.
+
+### 0.2.0
+
+Extensions to the public interface.
 
 ### 0.1.0
 
