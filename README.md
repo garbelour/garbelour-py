@@ -113,7 +113,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 ```
 
-`fetch-depth: 0` matters — `git diff` needs both base and head refs in
+`fetch-depth: 0` matters: `git diff` needs both base and head refs in
 the local repo.
 
 
@@ -132,7 +132,7 @@ The provider is auto-detected from whichever API-key env var is present:
 
 Override with `--llm-provider`, `--llm-model`, or `--llm-base-url`.
 
-Without `--llm`, hunks no heuristic claimed default to **review** — the
+Without `--llm`, hunks no heuristic claimed default to **review**: the
 safe option, since the tool hasn't actually evaluated them.
 
 
@@ -158,7 +158,7 @@ CLI flags override config; config overrides built-in defaults.
 
 `.gitattributes` is also consulted: any path marked `linguist-generated`
 (or `linguist-generated=true`) is treated as generated. Glob patterns in
-`.gitattributes` are not interpreted — fall back to
+`.gitattributes` are not interpreted; fall back to
 `[classify].generated_globs` for those.
 
 
@@ -217,21 +217,13 @@ let pipeline = Pipeline::standard(&PipelineConfig::default())?;
 let (classified, unclassified) = pipeline.run(&mut d);
 ```
 
-## Design notes
-
-- One subprocess to `git diff --raw -z -M -C` for file statuses (rename
-  detection), one to `git diff -U3 -M -C` for hunks (parsed via the
-  `patch` crate). File content for AST classifiers is loaded lazily via
-  `git show`.
-- Heuristics emit only `Skip` or `Review`. `Skim` requires positive
-  evidence — currently only the LLM emits it.
-- `focus_lines` pinpoints the specific line range that triggered each
-  classification, so the markdown deep link lands on the right line, not
-  just the start of the hunk.
-
 
 
 ## What is New in Garbelour
+
+### 0.4.0
+
+Refactored to support multiple findings per hunk.
 
 ### 0.3.0
 
